@@ -32,10 +32,12 @@ InfoAfterFile=AFTER_INSTALL.txt
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
-; Radio-style choice of container engine (exclusive = pick one).
+; Radio-style choice of container engine (exclusive = pick exactly one).
+; Flat task names — a "runtime\docker" style needs a parent "runtime" task,
+; which we don't want; same GroupDescription already groups them visually.
 [Tasks]
-Name: "runtime\docker"; Description: "Docker Desktop  —  easiest, just works (recommended)"; GroupDescription: "Which container engine should we install?"; Flags: exclusive
-Name: "runtime\podman"; Description: "Podman  —  lightweight, no Docker account needed"; GroupDescription: "Which container engine should we install?"; Flags: exclusive unchecked
+Name: "docker"; Description: "Docker Desktop  —  easiest, just works (recommended)"; GroupDescription: "Which container engine should we install?"; Flags: exclusive
+Name: "podman"; Description: "Podman  —  lightweight, no Docker account needed"; GroupDescription: "Which container engine should we install?"; Flags: exclusive unchecked
 
 [Files]
 Source: "scripts\*"; DestDir: "{app}\scripts"; Flags: recursesubdirs createallsubdirs ignoreversion
@@ -61,11 +63,11 @@ Name: "{autoprograms}\Stop {#MyAppShortName}"; Filename: "powershell.exe"; \
 Filename: "powershell.exe"; \
     Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\scripts\install.ps1"" -Runtime docker -TemplateDir ""{app}"""; \
     StatusMsg: "Setting up (installing Docker Desktop and WSL2 — this can take several minutes)..."; \
-    Flags: waituntilterminated; Tasks: runtime\docker
+    Flags: waituntilterminated; Tasks: docker
 Filename: "powershell.exe"; \
     Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\scripts\install.ps1"" -Runtime podman -TemplateDir ""{app}"""; \
     StatusMsg: "Setting up (installing Podman and WSL2 — this can take several minutes)..."; \
-    Flags: waituntilterminated; Tasks: runtime\podman
+    Flags: waituntilterminated; Tasks: podman
 
 [UninstallRun]
 ; Cleanly stop/remove containers on uninstall (books & settings are kept).

@@ -5,65 +5,205 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dad's Library</title>
   <style>
-    :root { --ink:#1c2530; --paper:#fbf7ef; --gold:#c8922b; --line:#e4dccb; }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; }
-    body {
-      font-family: Georgia, "Times New Roman", serif;
-      background: var(--paper); color: var(--ink);
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; min-height: 100vh; padding: 4vh 5vw; gap: 3vh;
+    :root {
+      --ink:      #26211a;
+      --ink-soft: #6b6154;
+      --paper:    #f6efe2;
+      --paper-2:  #fffdf8;
+      --gold:     #b9862f;
+      --gold-2:   #e9c877;
+      --line:     #e3d8c2;
+      --shadow:   rgba(60,45,20,.12);
+      --focus:    #2f6fb0;
     }
-    h1 { font-size: clamp(2.2rem, 6vw, 4rem); margin: 0; text-align: center; }
-    .sub { font-size: clamp(1.1rem, 2.6vw, 1.6rem); color:#5a6470; margin:0; text-align:center; }
-    .cards { display: grid; gap: 3vh; width: 100%; max-width: 820px; }
-    a.card {
-      display: flex; align-items: center; gap: 1.2rem;
-      text-decoration: none; color: var(--ink);
-      background: #fff; border: 3px solid var(--line); border-radius: 22px;
-      padding: 2.2rem 2.4rem; box-shadow: 0 6px 20px rgba(0,0,0,.06);
-      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
-    }
-    a.card:hover, a.card:focus {
-      transform: translateY(-3px); border-color: var(--gold);
-      box-shadow: 0 12px 30px rgba(0,0,0,.12); outline: none;
-    }
-    .emoji { font-size: clamp(2.6rem, 7vw, 4rem); line-height: 1; }
-    .txt strong { display: block; font-size: clamp(1.6rem, 4vw, 2.4rem); }
-    .txt span { font-size: clamp(1rem, 2.4vw, 1.35rem); color:#5a6470; }
-    footer { font-size: 1rem; color:#8a8375; text-align:center; }
     @media (prefers-color-scheme: dark) {
-      :root { --ink:#f0ead9; --paper:#161b22; --line:#2c333d; }
-      body { background: var(--paper); }
-      a.card { background:#1e242c; }
-      .sub, .txt span { color:#aeb6c0; }
+      :root {
+        --ink:      #f2ecdd;
+        --ink-soft: #b3a894;
+        --paper:    #14171d;
+        --paper-2:  #1d222b;
+        --gold:     #e9c877;
+        --gold-2:   #b9862f;
+        --line:     #2c333e;
+        --shadow:   rgba(0,0,0,.4);
+        --focus:    #6fb0ff;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--gold-2) 14%, transparent), transparent 60%),
+        var(--paper);
+      color: var(--ink);
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh; padding: 6vh 5vw 4vh; gap: 3.2vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header { text-align: center; }
+    .greeting {
+      font-size: clamp(1.05rem, 2.6vw, 1.5rem);
+      color: var(--ink-soft); margin: 0 0 .4rem; letter-spacing: .3px;
+    }
+    h1 {
+      font-size: clamp(2.4rem, 7vw, 4.4rem);
+      margin: 0; line-height: 1.05; font-weight: 700;
+    }
+    h1 .moon { color: var(--gold); }
+
+    main {
+      width: 100%; max-width: 760px;
+      display: grid; gap: 2.4vh;
+    }
+
+    a.card {
+      display: flex; align-items: center; gap: 1.6rem;
+      text-decoration: none; color: var(--ink);
+      background: var(--paper-2);
+      border: 2px solid var(--line); border-radius: 26px;
+      padding: clamp(1.5rem, 3.5vw, 2.4rem) clamp(1.6rem, 4vw, 2.6rem);
+      box-shadow: 0 8px 24px var(--shadow);
+      min-height: 112px;
+      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+    }
+    a.card:hover, a.card:focus-visible {
+      transform: translateY(-4px);
+      border-color: var(--gold);
+      box-shadow: 0 16px 36px var(--shadow);
+    }
+    a.card:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+
+    .icon {
+      flex: none;
+      width: clamp(64px, 14vw, 92px); height: clamp(64px, 14vw, 92px);
+      display: grid; place-items: center;
+      font-size: clamp(2.4rem, 7vw, 3.4rem); line-height: 1;
+      background: color-mix(in srgb, var(--gold-2) 22%, transparent);
+      border-radius: 20px;
+    }
+    .label strong {
+      display: block;
+      font-size: clamp(1.5rem, 4.4vw, 2.2rem); font-weight: 700;
+      margin-bottom: .25rem;
+    }
+    .label span {
+      font-size: clamp(1rem, 2.7vw, 1.3rem);
+      color: var(--ink-soft); line-height: 1.35;
+    }
+    .go {
+      margin-left: auto; flex: none;
+      font-size: clamp(1.8rem, 5vw, 2.4rem); color: var(--gold);
+      transition: transform .14s ease;
+    }
+    a.card:hover .go, a.card:focus-visible .go { transform: translateX(5px); }
+
+    .help {
+      margin-top: .4rem; background: none; border: none; cursor: pointer;
+      color: var(--ink-soft); font-family: inherit;
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      text-decoration: underline; text-underline-offset: 4px;
+      padding: .6rem 1rem; border-radius: 10px;
+    }
+    .help:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+    footer {
+      margin-top: auto; text-align: center;
+      color: var(--ink-soft); font-size: clamp(.95rem, 2.2vw, 1.1rem);
+    }
+    footer .dot { color: var(--gold); margin: 0 .5rem; }
+
+    /* Help panel */
+    dialog {
+      border: none; border-radius: 22px; padding: 0;
+      max-width: 540px; width: 92vw;
+      color: var(--ink); background: var(--paper-2);
+      box-shadow: 0 24px 60px rgba(0,0,0,.4);
+    }
+    dialog::backdrop { background: rgba(20,15,5,.55); }
+    .sheet { padding: clamp(1.6rem, 5vw, 2.4rem); }
+    .sheet h2 { margin: 0 0 1rem; font-size: clamp(1.5rem, 5vw, 2rem); }
+    .sheet ol { margin: 0; padding-left: 1.4rem; font-size: clamp(1.05rem, 3vw, 1.25rem); line-height: 1.6; }
+    .sheet li { margin-bottom: .7rem; }
+    .sheet button {
+      margin-top: 1.6rem; width: 100%;
+      font-family: inherit; font-size: clamp(1.1rem, 3vw, 1.3rem); font-weight: 700;
+      color: #1a1206; background: var(--gold-2);
+      border: none; border-radius: 14px; padding: .9rem 1rem; cursor: pointer;
+    }
+    .sheet button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      a.card, .go { transition: none; }
     }
   </style>
 </head>
 <body>
-  <h1>📚 Dad's Library</h1>
-  <p class="sub">Pick something to read. That's all — the computer handles the rest.</p>
+  <header>
+    <p class="greeting" id="greeting">Welcome back</p>
+    <h1><span class="moon">🌙</span> Dad's Library</h1>
+  </header>
 
-  <div class="cards">
-    <!-- Storyteller: self-hosted on this PC -->
-    <a class="card" href="http://localhost:8001">
-      <div class="emoji">🎧</div>
-      <div class="txt">
+  <main>
+    <a class="card" href="http://localhost:8001" aria-label="Read and listen together with Storyteller">
+      <span class="icon" aria-hidden="true">🎧</span>
+      <span class="label">
         <strong>Read &amp; Listen Together</strong>
-        <span>Your books, with the audiobook reading along in sync. (Storyteller)</span>
-      </div>
+        <span>Your books, with the audiobook reading along in sync.</span>
+      </span>
+      <span class="go" aria-hidden="true">›</span>
     </a>
 
-    <!-- FlowState: self-hosted on this PC (built from source). -->
-    <a class="card" href="http://localhost:8003">
-      <div class="emoji">🌊</div>
-      <div class="txt">
+    <a class="card" href="http://localhost:8003" aria-label="Open the Focus Reader">
+      <span class="icon" aria-hidden="true">🌊</span>
+      <span class="label">
         <strong>Focus Reader</strong>
-        <span>A calm, distraction-free way to read one word at a time. (FlowState)</span>
-      </div>
+        <span>A calm, distraction-free way to read one word at a time.</span>
+      </span>
+      <span class="go" aria-hidden="true">›</span>
     </a>
-  </div>
 
-  <footer>Running on your own computer • Nothing to sign up for</footer>
+    <button class="help" id="helpBtn" type="button">How do I use this?</button>
+  </main>
+
+  <footer>
+    Running on your own computer <span class="dot" aria-hidden="true">•</span> Nothing to sign up for
+  </footer>
+
+  <dialog id="helpDialog" aria-labelledby="helpTitle">
+    <div class="sheet">
+      <h2 id="helpTitle">Using your library</h2>
+      <ol>
+        <li>Pick one of the two big buttons.</li>
+        <li>It opens in this same window — read or listen as long as you like.</li>
+        <li>To come back here, click the <strong>back</strong> arrow at the top-left.</li>
+        <li>If a page ever looks blank, wait a moment and refresh (press <strong>F5</strong>).</li>
+      </ol>
+      <button id="helpClose" type="button" autofocus>Got it</button>
+    </div>
+  </dialog>
+
+  <script>
+    // A gentle, time-of-day greeting.
+    (function () {
+      var h = new Date().getHours();
+      var msg = h < 5  ? "Reading late tonight?"
+              : h < 12 ? "Good morning"
+              : h < 18 ? "Good afternoon"
+              :          "Good evening";
+      document.getElementById("greeting").textContent = msg;
+    })();
+
+    // Large-text help sheet.
+    var dlg = document.getElementById("helpDialog");
+    document.getElementById("helpBtn").addEventListener("click", function () {
+      if (typeof dlg.showModal === "function") dlg.showModal();
+    });
+    document.getElementById("helpClose").addEventListener("click", function () {
+      dlg.close();
+    });
+  </script>
 </body>
 </html>

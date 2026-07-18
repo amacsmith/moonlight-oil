@@ -8,14 +8,16 @@
 #   --build-arg FLOWSTATE_REF=<branch-or-commit>
 
 # --- Stage 1: build the static site ----------------------------------------
-# react-scripts 3.1.1 (webpack 4) predates OpenSSL 3, so we build on Node 16
-# with the legacy provider. CI=false stops CRA from treating lint warnings as
-# build-breaking errors. PUBLIC_URL=/ makes assets resolve when served at root
-# (upstream's package.json "homepage" points at a GitHub Pages subpath).
+# react-scripts 3.1.1 (webpack 4) predates OpenSSL 3. We build on Node 16,
+# which is still built against OpenSSL 1.1.1, so the classic webpack-4 OpenSSL
+# error never occurs and no --openssl-legacy-provider flag is needed (that flag
+# only exists on Node 17+ and is rejected on Node 16). CI=false stops CRA from
+# treating lint warnings as build-breaking errors. PUBLIC_URL=/ makes assets
+# resolve when served at root (upstream's "homepage" points at a Pages subpath).
 FROM node:16-bullseye AS build
 ARG FLOWSTATE_REPO=https://github.com/PeggyZWY/flowstate-webapp.git
 ARG FLOWSTATE_REF=master
-ENV NODE_OPTIONS=--openssl-legacy-provider CI=false PUBLIC_URL=/
+ENV CI=false PUBLIC_URL=/
 
 WORKDIR /src
 RUN git clone --depth 1 --branch "${FLOWSTATE_REF}" "${FLOWSTATE_REPO}" . \
