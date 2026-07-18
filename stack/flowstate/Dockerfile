@@ -20,7 +20,10 @@ ARG FLOWSTATE_REPO=https://github.com/PeggyZWY/flowstate-webapp.git
 ARG FLOWSTATE_REF=master
 # Force the official npm registry: upstream's lockfile pins the long-dead
 # registry.npm.taobao.org mirror, whose TLS cert has expired (CERT_HAS_EXPIRED).
-ENV CI=false PUBLIC_URL=/ NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
+# SKIP_PREFLIGHT_CHECK: installing fresh (without the lockfile) resolves a newer
+# eslint than react-scripts 3.1.1 pins, which trips CRA's preflight check. The
+# mismatch is harmless for a one-shot production build, so we skip that gate.
+ENV CI=false PUBLIC_URL=/ NPM_CONFIG_REGISTRY=https://registry.npmjs.org/ SKIP_PREFLIGHT_CHECK=true
 
 WORKDIR /src
 # node:16-bullseye (the full Debian image, not -slim) is buildpack-deps based
