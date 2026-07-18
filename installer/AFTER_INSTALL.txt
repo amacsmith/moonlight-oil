@@ -1,0 +1,15 @@
+All set!
+
+Two quick things:
+
+1) If this was the first time, please RESTART the computer once.
+   (Windows needs one restart to finish turning on its container engine.)
+
+2) After the restart, double-click the "Dad's Library" icon on the desktop.
+   The very first time it will spend a few minutes getting everything ready —
+   that's normal. A window will appear, then your library opens in the browser.
+
+That's it. From then on, just click "Dad's Library" whenever you want to read.
+
+If anything looks stuck: restart the computer and click the icon again.
+A setup log is saved at:  C:\Users\Public\MoonlightOil\moonlight-oil.log

@@ -1,0 +1,10 @@
+# Build output
+/dist/
+
+# Live stack state — never commit secrets or a family member's books
+stack/.env
+stack/data/
+
+# OS / editor noise
+Thumbs.db
+.DS_Store
