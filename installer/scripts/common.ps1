@@ -41,6 +41,18 @@ function Test-CommandExists {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
 }
 
+# Refuse to run a downloaded installer unless it carries a valid Authenticode
+# signature. TLS only proves *where* the file came from; this proves the file
+# is genuinely from a trusted publisher and hasn't been tampered with.
+function Assert-ValidSignature {
+    param([string]$Path)
+    $sig = Get-AuthenticodeSignature -FilePath $Path
+    if ($sig.Status -ne 'Valid') {
+        throw "Refusing to run '$Path': Authenticode status is '$($sig.Status)'. Downloaded installer is not trusted."
+    }
+    Write-Log "Verified publisher signature: $($sig.SignerCertificate.Subject)" 'OK'
+}
+
 # Which container runtime is installed? Prefer Docker, fall back to Podman.
 function Get-Runtime {
     if (Test-CommandExists 'docker')  { return 'docker' }

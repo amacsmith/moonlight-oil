@@ -24,7 +24,10 @@ Then open <http://localhost:8080>.
 | `storyteller` | 8001 / 8002 | Official image `registry.gitlab.com/storyteller-platform/storyteller:latest`. Data in `stack/data/storyteller`. |
 | `flowstate` | 8003 | Built from [PeggyZWY/flowstate-webapp](https://github.com/PeggyZWY/flowstate-webapp) via `stack/flowstate/Dockerfile`. Frontend-only, no data. |
 
-Ports are configurable in `.env`.
+Ports are configurable in `.env`. Note: the home page reads the service host
+dynamically but the **ports are hard-coded** in the `PORTS` object at the bottom
+of `stack/home/index.html` — if you change `STORYTELLER_PORT` / `FLOWSTATE_PORT`,
+update that object to match (the static page can't read `.env`).
 
 ## Why FlowState is built from source
 

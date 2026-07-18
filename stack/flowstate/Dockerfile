@@ -4,8 +4,9 @@
 # build the static bundle and serve it with a tiny web server. Fully offline
 # after the first build.
 #
-# Build from a pinned upstream commit for reproducibility. Override with:
-#   --build-arg FLOWSTATE_REF=<branch-or-commit>
+# The default FLOWSTATE_REF is the moving "master" branch (latest upstream).
+# For a reproducible build, pin it to a specific commit:
+#   --build-arg FLOWSTATE_REF=<commit-sha>
 
 # --- Stage 1: build the static site ----------------------------------------
 # react-scripts 3.1.1 (webpack 4) predates OpenSSL 3. We build on Node 16,
@@ -17,15 +18,22 @@
 FROM node:16-bullseye AS build
 ARG FLOWSTATE_REPO=https://github.com/PeggyZWY/flowstate-webapp.git
 ARG FLOWSTATE_REF=master
-ENV CI=false PUBLIC_URL=/
+# Force the official npm registry: upstream's lockfile pins the long-dead
+# registry.npm.taobao.org mirror, whose TLS cert has expired (CERT_HAS_EXPIRED).
+ENV CI=false PUBLIC_URL=/ NPM_CONFIG_REGISTRY=https://registry.npmjs.org/
 
 WORKDIR /src
+# node:16-bullseye (the full Debian image, not -slim) is buildpack-deps based
+# and already ships git; install it defensively in case the base ever changes.
+RUN git --version >/dev/null 2>&1 || (apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*)
 RUN git clone --depth 1 --branch "${FLOWSTATE_REF}" "${FLOWSTATE_REPO}" . \
     || git clone "${FLOWSTATE_REPO}" . && git checkout "${FLOWSTATE_REF}"
 
 WORKDIR /src/flowstate-react
-# Lockfile is present, but it's an old tree — fall back to install if ci fails.
-RUN npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+# Drop the stale lockfile/.npmrc (they point at the dead taobao mirror) and
+# resolve fresh from the official registry pinned via NPM_CONFIG_REGISTRY.
+RUN rm -f package-lock.json yarn.lock .npmrc
+RUN npm install --no-audit --no-fund
 RUN npm run build
 
 # --- Stage 2: serve the static files ---------------------------------------

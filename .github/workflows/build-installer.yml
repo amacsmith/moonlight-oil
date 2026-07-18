@@ -7,13 +7,16 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Least privilege by default; only the release-publishing job gets write.
 permissions:
-  contents: write   # needed to attach the .exe to a release on tags
+  contents: read
 
 jobs:
   # Compile the Inno Setup script into MoonlightOilSetup.exe.
   installer:
     runs-on: windows-latest
+    permissions:
+      contents: write   # needed to attach the .exe to a release on tags
     steps:
       - uses: actions/checkout@v4
 

@@ -102,6 +102,7 @@ if ($Runtime -eq 'docker') {
         Invoke-WebRequest -UseBasicParsing `
             -Uri 'https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe' `
             -OutFile $installer
+        Assert-ValidSignature $installer
         Write-Log "Installing Docker Desktop quietly..."
         Start-Process -FilePath $installer -ArgumentList 'install','--quiet','--accept-license' -Wait
         $rebootNeeded = $true
@@ -119,6 +120,7 @@ if ($Runtime -eq 'docker') {
             $installer = Join-Path $tmp $asset.name
             Write-Log "Downloading $($asset.name)..."
             Invoke-WebRequest -UseBasicParsing -Uri $asset.browser_download_url -OutFile $installer
+            Assert-ValidSignature $installer
             Write-Log "Installing Podman quietly..."
             Start-Process -FilePath $installer -ArgumentList '/install','/quiet','/norestart' -Wait
             $rebootNeeded = $true

@@ -3,7 +3,7 @@
 # This single stack runs everything behind one friendly home page:
 #   - Storyteller : reads your ebooks and audiobooks in sync (fully self-hosted)
 #   - Home        : a big-button landing page that ties it together
-#   - FlowState   : optional self-hosted focus reader (OFF by default — see note)
+#   - FlowState   : self-hosted focus reader (built from source on first run)
 #
 # It works the same whether Docker or Podman is installed. The launcher script
 # picks whichever runtime is present and runs `compose` against this file.

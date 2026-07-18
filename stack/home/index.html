@@ -16,8 +16,9 @@
       --shadow:   rgba(60,45,20,.12);
       --focus:    #2f6fb0;
     }
+    /* Dark values, shared by OS preference and the manual toggle. */
     @media (prefers-color-scheme: dark) {
-      :root {
+      :root:not([data-theme="light"]) {
         --ink:      #f2ecdd;
         --ink-soft: #b3a894;
         --paper:    #14171d;
@@ -28,6 +29,17 @@
         --shadow:   rgba(0,0,0,.4);
         --focus:    #6fb0ff;
       }
+    }
+    :root[data-theme="dark"] {
+      --ink:      #f2ecdd;
+      --ink-soft: #b3a894;
+      --paper:    #14171d;
+      --paper-2:  #1d222b;
+      --gold:     #e9c877;
+      --gold-2:   #b9862f;
+      --line:     #2c333e;
+      --shadow:   rgba(0,0,0,.4);
+      --focus:    #6fb0ff;
     }
 
     * { box-sizing: border-box; }
@@ -115,6 +127,19 @@
     }
     footer .dot { color: var(--gold); margin: 0 .5rem; }
 
+    /* Light / dark toggle — top-right, big and obvious. */
+    .theme-toggle {
+      position: fixed; top: 1.2rem; right: 1.2rem;
+      width: 56px; height: 56px; border-radius: 50%;
+      display: grid; place-items: center; cursor: pointer;
+      font-size: 1.6rem; line-height: 1;
+      background: var(--paper-2); color: var(--ink);
+      border: 2px solid var(--line); box-shadow: 0 6px 18px var(--shadow);
+      transition: transform .14s ease, border-color .14s ease;
+    }
+    .theme-toggle:hover { transform: scale(1.06); border-color: var(--gold); }
+    .theme-toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
     /* Help panel */
     dialog {
       border: none; border-radius: 22px; padding: 0;
@@ -141,13 +166,16 @@
   </style>
 </head>
 <body>
+  <button class="theme-toggle" id="themeToggle" type="button"
+          aria-label="Switch between light and dark">🌙</button>
+
   <header>
     <p class="greeting" id="greeting">Welcome back</p>
     <h1><span class="moon">🌙</span> Dad's Library</h1>
   </header>
 
   <main>
-    <a class="card" href="http://localhost:8001" aria-label="Read and listen together with Storyteller">
+    <a class="card" id="link-storyteller" href="http://localhost:8001" aria-label="Read and listen together with Storyteller">
       <span class="icon" aria-hidden="true">🎧</span>
       <span class="label">
         <strong>Read &amp; Listen Together</strong>
@@ -156,7 +184,7 @@
       <span class="go" aria-hidden="true">›</span>
     </a>
 
-    <a class="card" href="http://localhost:8003" aria-label="Open the Focus Reader">
+    <a class="card" id="link-flowstate" href="http://localhost:8003" aria-label="Open the Focus Reader">
       <span class="icon" aria-hidden="true">🌊</span>
       <span class="label">
         <strong>Focus Reader</strong>
@@ -186,6 +214,18 @@
   </dialog>
 
   <script>
+    // Default ports. If you change STORYTELLER_PORT / FLOWSTATE_PORT in .env,
+    // change them here too (this static page can't read the .env file).
+    var PORTS = { storyteller: 8001, flowstate: 8003 };
+
+    // Point the buttons at whatever host is serving THIS page — so it works on
+    // the PC itself (localhost) and from other devices on the home network.
+    (function () {
+      var host = location.hostname || "localhost";
+      document.getElementById("link-storyteller").href = "http://" + host + ":" + PORTS.storyteller;
+      document.getElementById("link-flowstate").href   = "http://" + host + ":" + PORTS.flowstate;
+    })();
+
     // A gentle, time-of-day greeting.
     (function () {
       var h = new Date().getHours();
@@ -194,6 +234,29 @@
               : h < 18 ? "Good afternoon"
               :          "Good evening";
       document.getElementById("greeting").textContent = msg;
+    })();
+
+    // Light / dark theme: follow the OS by default, remember a manual choice.
+    (function () {
+      var root = document.documentElement;
+      var btn  = document.getElementById("themeToggle");
+      function effective() {
+        var set = root.getAttribute("data-theme");
+        if (set) return set;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      function paint() { btn.textContent = effective() === "dark" ? "☀️" : "🌙"; }
+      try {
+        var saved = localStorage.getItem("moon-theme");
+        if (saved) root.setAttribute("data-theme", saved);
+      } catch (e) {}
+      paint();
+      btn.addEventListener("click", function () {
+        var next = effective() === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        try { localStorage.setItem("moon-theme", next); } catch (e) {}
+        paint();
+      });
     })();
 
     // Large-text help sheet.
