@@ -86,6 +86,7 @@
       border-color: var(--gold);
       box-shadow: 0 16px 36px var(--shadow);
     }
+    a.card:active { transform: translateY(-1px); box-shadow: 0 4px 12px var(--shadow); }
     a.card:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
 
     .icon {
@@ -96,6 +97,8 @@
       background: color-mix(in srgb, var(--gold-2) 22%, transparent);
       border-radius: 20px;
     }
+    .icon-warm { background: color-mix(in srgb, #d4956a 18%, transparent); }
+    .icon-cool { background: color-mix(in srgb, #5a9ec2 18%, transparent); }
     .label strong {
       display: block;
       font-size: clamp(1.5rem, 4.4vw, 2.2rem); font-weight: 700;
@@ -107,7 +110,7 @@
     }
     .go {
       margin-left: auto; flex: none;
-      font-size: clamp(1.8rem, 5vw, 2.4rem); color: var(--gold);
+      font-size: clamp(2rem, 5.5vw, 2.8rem); font-weight: 700; color: var(--gold);
       transition: transform .14s ease;
     }
     a.card:hover .go, a.card:focus-visible .go { transform: translateX(5px); }
@@ -147,7 +150,7 @@
       color: var(--ink); background: var(--paper-2);
       box-shadow: 0 24px 60px rgba(0,0,0,.4);
     }
-    dialog::backdrop { background: rgba(20,15,5,.55); }
+    dialog::backdrop { background: rgba(20,15,5,.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
     .sheet { padding: clamp(1.6rem, 5vw, 2.4rem); }
     .sheet h2 { margin: 0 0 1rem; font-size: clamp(1.5rem, 5vw, 2rem); }
     .sheet ol { margin: 0; padding-left: 1.4rem; font-size: clamp(1.05rem, 3vw, 1.25rem); line-height: 1.6; }
@@ -160,12 +163,28 @@
     }
     .sheet button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
+    .skip-link {
+      position: absolute; left: -9999px; top: 0;
+      background: var(--gold); color: #1a1206; padding: .6rem 1.2rem;
+      font-weight: 700; border-radius: 0 0 10px 10px; z-index: 100;
+    }
+    .skip-link:focus { left: 50%; transform: translateX(-50%); }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    a.card { animation: card-in .4s ease both; }
+    a.card:nth-child(2) { animation-delay: .1s; }
+
     @media (prefers-reduced-motion: reduce) {
       a.card, .go { transition: none; }
+      a.card { animation: none; }
     }
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to main content</a>
   <button class="theme-toggle" id="themeToggle" type="button"
           aria-label="Switch between light and dark">🌙</button>
 
@@ -174,9 +193,9 @@
     <h1><span class="moon">🌙</span> Dad's Library</h1>
   </header>
 
-  <main>
+  <main id="main">
     <a class="card" id="link-storyteller" href="http://localhost:8001" aria-label="Read and listen together with Storyteller">
-      <span class="icon" aria-hidden="true">🎧</span>
+      <span class="icon icon-warm" aria-hidden="true">🎧</span>
       <span class="label">
         <strong>Read &amp; Listen Together</strong>
         <span>Your books, with the audiobook reading along in sync.</span>
@@ -185,7 +204,7 @@
     </a>
 
     <a class="card" id="link-flowstate" href="http://localhost:8003" aria-label="Open the Focus Reader">
-      <span class="icon" aria-hidden="true">🌊</span>
+      <span class="icon icon-cool" aria-hidden="true">🌊</span>
       <span class="label">
         <strong>Focus Reader</strong>
         <span>A calm, distraction-free way to read one word at a time.</span>

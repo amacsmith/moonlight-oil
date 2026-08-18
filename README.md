@@ -60,8 +60,10 @@ stack/
   .env.example           documented settings (installer generates the real .env)
   home/index.html        the big-button landing page
   flowstate/Dockerfile   builds FlowState Reader from source
-docs/                    guides (for-dad + self-hosting)
-.github/workflows/       CI that compiles the .exe and smoke-tests the build
+site/                    VitePress documentation site
+tests/                   validation test suite (node:test)
+docs/                    standalone markdown guides
+.github/workflows/       CI pipelines (build + test)
 ```
 
 ## Building the installer yourself
@@ -75,6 +77,31 @@ iscc installer\moonlight-oil.iss
 ```
 
 The `.exe` lands in `dist\`.
+
+## Running the tests
+
+```bash
+npm test
+```
+
+60 validation tests check the compose config, HTML, Dockerfile, installer scripts,
+and environment file — no Docker required.
+
+## Documentation site
+
+```bash
+cd site
+npm install
+npm run dev
+```
+
+Builds with VitePress. Covers architecture, installation, self-hosting, branching
+strategy, CI/CD, and testing.
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the branching strategy, CI checks,
+and how to set up locally.
 
 ## Credits & licensing
 

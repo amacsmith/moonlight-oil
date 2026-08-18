@@ -34,8 +34,8 @@ update that object to match (the static page can't read `.env`).
 FlowState Reader is a Create React App (react-scripts 3.1.1) with no backend,
 published only to GitHub Pages. There is no official container. The Dockerfile:
 
-- builds on **Node 16** with `NODE_OPTIONS=--openssl-legacy-provider` (webpack 4
-  predates OpenSSL 3),
+- builds on **Node 16** (which still links OpenSSL 1.1.1, so webpack 4's legacy
+  crypto calls work without flags),
 - sets `CI=false` so lint warnings don't fail the build,
 - sets `PUBLIC_URL=/` so assets resolve when served at the site root (upstream's
   `homepage` points at a GitHub Pages subpath),
