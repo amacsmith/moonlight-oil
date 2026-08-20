@@ -46,6 +46,9 @@ try {
             "READIUM_PORT=8002"
             "FLOWSTATE_PORT=8003"
             "FLOWSTATE_REF=master"
+            # Filled in fresh by the launcher on every start, since the router
+            # can hand this PC a different address between one day and the next.
+            "LAN_HOST="
             "STORYTELLER_SECRET_KEY=$secret"
             "STORYTELLER_LOG_LEVEL=info"
             "PUID=1000"

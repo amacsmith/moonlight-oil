@@ -91,6 +91,58 @@ function Test-EngineReady {
     try { & $runtime info *> $null; return ($LASTEXITCODE -eq 0) } catch { return $false }
 }
 
+# This PC's address on the home network — the one a phone or tablet in the same
+# house can actually reach. Picking it is fiddlier than it looks: installing
+# Docker or Podman adds virtual adapters with their own private addresses, and
+# handing one of those to a tablet gets you nowhere. So we ask Windows which
+# interface it would use to reach the outside world and take that one's address.
+function Get-LanAddress {
+    try {
+        $route = Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction Stop |
+                 Sort-Object -Property RouteMetric, InterfaceMetric |
+                 Select-Object -First 1
+        if ($route) {
+            $addr = Get-NetIPAddress -InterfaceIndex $route.ifIndex -AddressFamily IPv4 -ErrorAction Stop |
+                    Where-Object { $_.IPAddress -notmatch '^(127\.|169\.254\.)' } |
+                    Select-Object -First 1
+            if ($addr) { return $addr.IPAddress }
+        }
+    } catch {
+        # Get-NetRoute is missing or the machine has no default route. Fall through.
+    }
+
+    try {
+        $ip = [System.Net.Dns]::GetHostAddresses([System.Net.Dns]::GetHostName()) |
+              Where-Object { $_.AddressFamily -eq 'InterNetwork' } |
+              ForEach-Object { $_.IPAddressToString } |
+              Where-Object { $_ -notmatch '^(127\.|169\.254\.)' } |
+              Select-Object -First 1
+        if ($ip) { return $ip }
+    } catch { }
+
+    # No answer is a perfectly fine answer: the home page just won't offer the
+    # phone/tablet QR code, and everything else works exactly as before.
+    return ''
+}
+
+# Set (or add) one KEY=value line in an .env file, leaving everything else alone.
+function Set-EnvValue {
+    param([string]$Path, [string]$Key, [string]$Value)
+
+    if (-not (Test-Path $Path)) { return }
+    $pattern = "^\s*$([regex]::Escape($Key))\s*="
+    $lines   = @(Get-Content -Path $Path)
+    $found   = $false
+
+    $updated = foreach ($line in $lines) {
+        if ($line -match $pattern) { $found = $true; "$Key=$Value" }
+        else { $line }
+    }
+    if (-not $found) { $updated = @($updated) + "$Key=$Value" }
+
+    Set-Content -Path $Path -Value $updated -Encoding ASCII
+}
+
 # Poll a URL until it responds or we give up.
 function Wait-ForUrl {
     param([string]$Url, [int]$TimeoutSeconds = 180)

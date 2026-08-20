@@ -14,15 +14,35 @@
 services:
   # -------------------------------------------------------------------------
   # Home page — the ONE thing Dad opens. Big buttons, large text.
-  # A tiny static file server (Caddy) hosting ./home.
+  #
+  # Caddy serves ./home and does two small jobs the page can't do for itself:
+  # it publishes the real ports at /config.json, and it proxies /up/<service>
+  # so the page can tell whether a service is awake before Dad clicks it.
+  # See ./caddy/Caddyfile.
   # -------------------------------------------------------------------------
   home:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
       - "${HOME_PORT:-8080}:80"
+    environment:
+      # Baked into /config.json so the page always points at the right ports,
+      # even if these were changed to dodge a conflict on this PC.
+      HOME_PORT: "${HOME_PORT:-8080}"
+      STORYTELLER_PORT: "${STORYTELLER_PORT:-8001}"
+      FLOWSTATE_PORT: "${FLOWSTATE_PORT:-8003}"
+      # The PC's address on the home network. The launcher fills this in; it's
+      # what the "read on your tablet" QR code points at.
+      LAN_HOST: "${LAN_HOST:-}"
     volumes:
       - ./home:/usr/share/caddy:ro
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1/config.json"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     networks:
       - library
 

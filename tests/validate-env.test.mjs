@@ -17,6 +17,7 @@ describe(".env.example", () => {
     "PUID",
     "PGID",
     "FLOWSTATE_REF",
+    "LAN_HOST",
   ];
 
   for (const key of required) {
@@ -27,5 +28,12 @@ describe(".env.example", () => {
 
   it("warns not to share the secret key", () => {
     assert.match(env, /replace-me|do not share/i);
+  });
+
+  it("explains that LAN_HOST is optional", () => {
+    // It's blank until the launcher fills it in, and a blank value must not
+    // read as "something is broken".
+    assert.match(env, /LAN_HOST=\s*$/m);
+    assert.match(env, /QR code/i);
   });
 });

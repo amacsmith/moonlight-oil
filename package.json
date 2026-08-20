@@ -4,7 +4,11 @@
   "private": true,
   "description": "One-click Windows installer for a private, self-hosted home library",
   "scripts": {
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/browser/home.e2e.mjs",
+    "home:up": "docker compose -f stack/docker-compose.yml up -d home",
+    "home:down": "docker compose -f stack/docker-compose.yml down",
+    "caddy:check": "docker run --rm -v \"$PWD/stack/caddy/Caddyfile:/etc/caddy/Caddyfile:ro\" caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile"
   },
   "repository": {
     "type": "git",

@@ -20,6 +20,45 @@ jobs:
       - name: Run validation tests
         run: node --test tests/*.test.mjs
 
+  # The validation job reads the source and checks it says the right things.
+  # This one checks the page actually behaves, against a real Caddy container.
+  # The two library services are deliberately left down: "not listening yet" is
+  # the state the home page exists to handle gracefully.
+  browser:
+    runs-on: ubuntu-latest
+    # Compose interpolates the whole file on every invocation, not just the
+    # service being addressed, so the secret has to be present for `logs` and
+    # `ps` too — not only for `up`.
+    env:
+      STORYTELLER_SECRET_KEY: not-a-real-secret-just-for-ci
+      LAN_HOST: 192.168.1.42
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check the Caddy config is valid
+        run: |
+          docker run --rm \
+            -v "$PWD/stack/caddy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile
+
+      - name: Start the home page
+        run: docker compose -f stack/docker-compose.yml up -d home
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1
+          npx playwright install --with-deps chromium
+
+      - name: Drive the page in a browser
+        run: node tests/browser/home.e2e.mjs
+
+      - name: Container logs (on failure)
+        if: failure()
+        run: docker compose -f stack/docker-compose.yml logs home
+
   docs:
     runs-on: ubuntu-latest
     steps:
