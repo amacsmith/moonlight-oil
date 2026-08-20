@@ -1,0 +1,14 @@
+{
+  "name": "moonlight-oil",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One-click Windows installer for a private, self-hosted home library",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amacsmith/moonlight-oil.git"
+  },
+  "license": "ISC"
+}

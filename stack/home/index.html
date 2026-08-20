@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dad's Library</title>
+  <style>
+    :root {
+      --ink:      #26211a;
+      --ink-soft: #6b6154;
+      --paper:    #f6efe2;
+      --paper-2:  #fffdf8;
+      --gold:     #b9862f;
+      --gold-2:   #e9c877;
+      --line:     #e3d8c2;
+      --shadow:   rgba(60,45,20,.12);
+      --focus:    #2f6fb0;
+    }
+    /* Dark values, shared by OS preference and the manual toggle. */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --ink:      #f2ecdd;
+        --ink-soft: #b3a894;
+        --paper:    #14171d;
+        --paper-2:  #1d222b;
+        --gold:     #e9c877;
+        --gold-2:   #b9862f;
+        --line:     #2c333e;
+        --shadow:   rgba(0,0,0,.4);
+        --focus:    #6fb0ff;
+      }
+    }
+    :root[data-theme="dark"] {
+      --ink:      #f2ecdd;
+      --ink-soft: #b3a894;
+      --paper:    #14171d;
+      --paper-2:  #1d222b;
+      --gold:     #e9c877;
+      --gold-2:   #b9862f;
+      --line:     #2c333e;
+      --shadow:   rgba(0,0,0,.4);
+      --focus:    #6fb0ff;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+      background:
+        radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--gold-2) 14%, transparent), transparent 60%),
+        var(--paper);
+      color: var(--ink);
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh; padding: 6vh 5vw 4vh; gap: 3.2vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header { text-align: center; }
+    .greeting {
+      font-size: clamp(1.05rem, 2.6vw, 1.5rem);
+      color: var(--ink-soft); margin: 0 0 .4rem; letter-spacing: .3px;
+    }
+    h1 {
+      font-size: clamp(2.4rem, 7vw, 4.4rem);
+      margin: 0; line-height: 1.05; font-weight: 700;
+    }
+    h1 .moon { color: var(--gold); }
+
+    main {
+      width: 100%; max-width: 760px;
+      display: grid; gap: 2.4vh;
+    }
+
+    a.card {
+      display: flex; align-items: center; gap: 1.6rem;
+      text-decoration: none; color: var(--ink);
+      background: var(--paper-2);
+      border: 2px solid var(--line); border-radius: 26px;
+      padding: clamp(1.5rem, 3.5vw, 2.4rem) clamp(1.6rem, 4vw, 2.6rem);
+      box-shadow: 0 8px 24px var(--shadow);
+      min-height: 112px;
+      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease;
+    }
+    a.card:hover, a.card:focus-visible {
+      transform: translateY(-4px);
+      border-color: var(--gold);
+      box-shadow: 0 16px 36px var(--shadow);
+    }
+    a.card:active { transform: translateY(-1px); box-shadow: 0 4px 12px var(--shadow); }
+    a.card:focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; }
+
+    .icon {
+      flex: none;
+      width: clamp(64px, 14vw, 92px); height: clamp(64px, 14vw, 92px);
+      display: grid; place-items: center;
+      font-size: clamp(2.4rem, 7vw, 3.4rem); line-height: 1;
+      background: color-mix(in srgb, var(--gold-2) 22%, transparent);
+      border-radius: 20px;
+    }
+    .icon-warm { background: color-mix(in srgb, #d4956a 18%, transparent); }
+    .icon-cool { background: color-mix(in srgb, #5a9ec2 18%, transparent); }
+    .label strong {
+      display: block;
+      font-size: clamp(1.5rem, 4.4vw, 2.2rem); font-weight: 700;
+      margin-bottom: .25rem;
+    }
+    .label span {
+      font-size: clamp(1rem, 2.7vw, 1.3rem);
+      color: var(--ink-soft); line-height: 1.35;
+    }
+    .go {
+      margin-left: auto; flex: none;
+      font-size: clamp(2rem, 5.5vw, 2.8rem); font-weight: 700; color: var(--gold);
+      transition: transform .14s ease;
+    }
+    a.card:hover .go, a.card:focus-visible .go { transform: translateX(5px); }
+
+    .help {
+      margin-top: .4rem; background: none; border: none; cursor: pointer;
+      color: var(--ink-soft); font-family: inherit;
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      text-decoration: underline; text-underline-offset: 4px;
+      padding: .6rem 1rem; border-radius: 10px;
+    }
+    .help:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+    footer {
+      margin-top: auto; text-align: center;
+      color: var(--ink-soft); font-size: clamp(.95rem, 2.2vw, 1.1rem);
+    }
+    footer .dot { color: var(--gold); margin: 0 .5rem; }
+
+    /* Light / dark toggle — top-right, big and obvious. */
+    .theme-toggle {
+      position: fixed; top: 1.2rem; right: 1.2rem;
+      width: 56px; height: 56px; border-radius: 50%;
+      display: grid; place-items: center; cursor: pointer;
+      font-size: 1.6rem; line-height: 1;
+      background: var(--paper-2); color: var(--ink);
+      border: 2px solid var(--line); box-shadow: 0 6px 18px var(--shadow);
+      transition: transform .14s ease, border-color .14s ease;
+    }
+    .theme-toggle:hover { transform: scale(1.06); border-color: var(--gold); }
+    .theme-toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+    /* Help panel */
+    dialog {
+      border: none; border-radius: 22px; padding: 0;
+      max-width: 540px; width: 92vw;
+      color: var(--ink); background: var(--paper-2);
+      box-shadow: 0 24px 60px rgba(0,0,0,.4);
+    }
+    dialog::backdrop { background: rgba(20,15,5,.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+    .sheet { padding: clamp(1.6rem, 5vw, 2.4rem); }
+    .sheet h2 { margin: 0 0 1rem; font-size: clamp(1.5rem, 5vw, 2rem); }
+    .sheet ol { margin: 0; padding-left: 1.4rem; font-size: clamp(1.05rem, 3vw, 1.25rem); line-height: 1.6; }
+    .sheet li { margin-bottom: .7rem; }
+    .sheet button {
+      margin-top: 1.6rem; width: 100%;
+      font-family: inherit; font-size: clamp(1.1rem, 3vw, 1.3rem); font-weight: 700;
+      color: #1a1206; background: var(--gold-2);
+      border: none; border-radius: 14px; padding: .9rem 1rem; cursor: pointer;
+    }
+    .sheet button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+    .skip-link {
+      position: absolute; left: -9999px; top: 0;
+      background: var(--gold); color: #1a1206; padding: .6rem 1.2rem;
+      font-weight: 700; border-radius: 0 0 10px 10px; z-index: 100;
+    }
+    .skip-link:focus { left: 50%; transform: translateX(-50%); }
+
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    a.card { animation: card-in .4s ease both; }
+    a.card:nth-child(2) { animation-delay: .1s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      a.card, .go { transition: none; }
+      a.card { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <button class="theme-toggle" id="themeToggle" type="button"
+          aria-label="Switch between light and dark">🌙</button>
+
+  <header>
+    <p class="greeting" id="greeting">Welcome back</p>
+    <h1><span class="moon">🌙</span> Dad's Library</h1>
+  </header>
+
+  <main id="main">
+    <a class="card" id="link-storyteller" href="http://localhost:8001" aria-label="Read and listen together with Storyteller">
+      <span class="icon icon-warm" aria-hidden="true">🎧</span>
+      <span class="label">
+        <strong>Read &amp; Listen Together</strong>
+        <span>Your books, with the audiobook reading along in sync.</span>
+      </span>
+      <span class="go" aria-hidden="true">›</span>
+    </a>
+
+    <a class="card" id="link-flowstate" href="http://localhost:8003" aria-label="Open the Focus Reader">
+      <span class="icon icon-cool" aria-hidden="true">🌊</span>
+      <span class="label">
+        <strong>Focus Reader</strong>
+        <span>A calm, distraction-free way to read one word at a time.</span>
+      </span>
+      <span class="go" aria-hidden="true">›</span>
+    </a>
+
+    <button class="help" id="helpBtn" type="button">How do I use this?</button>
+  </main>
+
+  <footer>
+    Running on your own computer <span class="dot" aria-hidden="true">•</span> Nothing to sign up for
+  </footer>
+
+  <dialog id="helpDialog" aria-labelledby="helpTitle">
+    <div class="sheet">
+      <h2 id="helpTitle">Using your library</h2>
+      <ol>
+        <li>Pick one of the two big buttons.</li>
+        <li>It opens in this same window — read or listen as long as you like.</li>
+        <li>To come back here, click the <strong>back</strong> arrow at the top-left.</li>
+        <li>If a page ever looks blank, wait a moment and refresh (press <strong>F5</strong>).</li>
+      </ol>
+      <button id="helpClose" type="button" autofocus>Got it</button>
+    </div>
+  </dialog>
+
+  <script>
+    // Default ports. If you change STORYTELLER_PORT / FLOWSTATE_PORT in .env,
+    // change them here too (this static page can't read the .env file).
+    var PORTS = { storyteller: 8001, flowstate: 8003 };
+
+    // Point the buttons at whatever host is serving THIS page — so it works on
+    // the PC itself (localhost) and from other devices on the home network.
+    (function () {
+      var host = location.hostname || "localhost";
+      document.getElementById("link-storyteller").href = "http://" + host + ":" + PORTS.storyteller;
+      document.getElementById("link-flowstate").href   = "http://" + host + ":" + PORTS.flowstate;
+    })();
+
+    // A gentle, time-of-day greeting.
+    (function () {
+      var h = new Date().getHours();
+      var msg = h < 5  ? "Reading late tonight?"
+              : h < 12 ? "Good morning"
+              : h < 18 ? "Good afternoon"
+              :          "Good evening";
+      document.getElementById("greeting").textContent = msg;
+    })();
+
+    // Light / dark theme: follow the OS by default, remember a manual choice.
+    (function () {
+      var root = document.documentElement;
+      var btn  = document.getElementById("themeToggle");
+      function effective() {
+        var set = root.getAttribute("data-theme");
+        if (set) return set;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      function paint() { btn.textContent = effective() === "dark" ? "☀️" : "🌙"; }
+      try {
+        var saved = localStorage.getItem("moon-theme");
+        if (saved) root.setAttribute("data-theme", saved);
+      } catch (e) {}
+      paint();
+      btn.addEventListener("click", function () {
+        var next = effective() === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        try { localStorage.setItem("moon-theme", next); } catch (e) {}
+        paint();
+      });
+    })();
+
+    // Large-text help sheet.
+    var dlg = document.getElementById("helpDialog");
+    document.getElementById("helpBtn").addEventListener("click", function () {
+      if (typeof dlg.showModal === "function") dlg.showModal();
+    });
+    document.getElementById("helpClose").addEventListener("click", function () {
+      dlg.close();
+    });
+  </script>
+</body>
+</html>

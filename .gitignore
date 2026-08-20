@@ -1,0 +1,15 @@
+# Build output
+/dist/
+site/.vitepress/dist/
+site/.vitepress/cache/
+
+# Dependencies
+node_modules/
+
+# Live stack state — never commit secrets or a family member's books
+stack/.env
+stack/data/
+
+# OS / editor noise
+Thumbs.db
+.DS_Store
