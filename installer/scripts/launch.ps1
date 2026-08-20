@@ -58,6 +58,22 @@ if (-not (Test-EngineReady)) {
 }
 Write-Log "Engine is running." 'OK'
 
+# --- Work out where we live ------------------------------------------------
+$homePort = '8080'
+$envFile = Join-Path $Global:MoonStack '.env'
+if (Test-Path $envFile) {
+    $m = Select-String -Path $envFile -Pattern '^HOME_PORT=(\d+)' | Select-Object -First 1
+    if ($m) { $homePort = $m.Matches[0].Groups[1].Value }
+}
+$url = "http://localhost:$homePort"
+
+# Record this PC's address on the home network before starting the stack, so
+# the home page can offer a QR code that carries the library to a phone or
+# tablet. Addresses change when routers hand out new leases, so we re-check
+# every launch rather than trusting what the installer saw once.
+$lan = Get-LanAddress
+Set-EnvValue -Path $envFile -Key 'LAN_HOST' -Value $lan
+
 # --- Start the library -----------------------------------------------------
 try {
     Write-Log "Starting your library (the very first time builds it, which can take a few minutes)..."
@@ -69,14 +85,9 @@ try {
     exit 1
 }
 
-# --- Open the home page once it answers ------------------------------------
-$homePort = '8080'
-$envFile = Join-Path $Global:MoonStack '.env'
-if (Test-Path $envFile) {
-    $m = Select-String -Path $envFile -Pattern '^HOME_PORT=(\d+)' | Select-Object -First 1
-    if ($m) { $homePort = $m.Matches[0].Groups[1].Value }
+if ($lan) {
+    Write-Log "On this home network it's also at http://${lan}:$homePort (the home page shows a QR code for it)." 'OK'
 }
-$url = "http://localhost:$homePort"
 
 Write-Log "Waiting for the library to be ready..."
 if (Wait-ForUrl -Url $url -TimeoutSeconds 240) {

@@ -73,6 +73,31 @@ describe("PowerShell scripts", () => {
     assert.match(common, /function Test-EngineReady/);
     assert.match(common, /function Wait-ForUrl/);
     assert.match(common, /function Assert-ValidSignature/);
+    assert.match(common, /function Get-LanAddress/);
+    assert.match(common, /function Set-EnvValue/);
+  });
+
+  it("Get-LanAddress ignores addresses a tablet can't reach", () => {
+    const common = readFileSync(resolve(scriptsDir, "common.ps1"), "utf8");
+    // Loopback and link-local are useless to another device on the network.
+    assert.match(common, /\^\(127\\\.\|169\\\.254\\\.\)/);
+    // Asking which interface carries the default route is what keeps us off
+    // the virtual adapters that Docker and Podman install.
+    assert.match(common, /Get-NetRoute -DestinationPrefix '0\.0\.0\.0\/0'/);
+  });
+
+  it("Get-LanAddress returns empty rather than throwing when there's no answer", () => {
+    const common = readFileSync(resolve(scriptsDir, "common.ps1"), "utf8");
+    const fn = common.slice(common.indexOf("function Get-LanAddress"));
+    assert.match(fn.slice(0, fn.indexOf("function Set-EnvValue")), /return ''/);
+  });
+
+  it("Set-EnvValue leaves the rest of the file alone", () => {
+    const common = readFileSync(resolve(scriptsDir, "common.ps1"), "utf8");
+    const fn = common.slice(common.indexOf("function Set-EnvValue"));
+    // It must rewrite only the matching key — the secret key lives in there too.
+    assert.match(fn, /regex\]::Escape\(\$Key\)/);
+    assert.match(fn, /if \(-not \$found\)/);
   });
 
   it("install.ps1 generates STORYTELLER_SECRET_KEY", () => {
@@ -84,6 +109,23 @@ describe("PowerShell scripts", () => {
   it("launch.ps1 waits for the home page", () => {
     const launch = readFileSync(resolve(scriptsDir, "launch.ps1"), "utf8");
     assert.match(launch, /Wait-ForUrl/);
+  });
+
+  it("launch.ps1 records the LAN address before starting the stack", () => {
+    const launch = readFileSync(resolve(scriptsDir, "launch.ps1"), "utf8");
+    const detected = launch.indexOf("Set-EnvValue -Path $envFile -Key 'LAN_HOST'");
+    const started = launch.indexOf("Invoke-Compose up -d");
+    assert.ok(detected > -1, "launch.ps1 should record LAN_HOST");
+    assert.ok(started > -1);
+    assert.ok(
+      detected < started,
+      "the address must be written before compose starts, or Caddy won't see it",
+    );
+  });
+
+  it("install.ps1 seeds LAN_HOST so the key exists from the start", () => {
+    const install = readFileSync(resolve(scriptsDir, "install.ps1"), "utf8");
+    assert.match(install, /"LAN_HOST="/);
   });
 
   it("all scripts dot-source common.ps1", () => {

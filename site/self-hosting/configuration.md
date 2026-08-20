@@ -10,6 +10,7 @@ All settings live in `stack/.env`. The installer generates this file automatical
 |----------|---------|-------------|
 | `HOME_PORT` | `8080` | The home page Dad opens |
 | `STORYTELLER_PORT` | `8001` | Storyteller web app |
+| `LAN_HOST` | *(blank)* | This PC's address on the home network. The launcher refreshes it on every start; the home page turns it into a QR code for phones and tablets. Blank simply hides that panel |
 | `READIUM_PORT` | `8002` | Storyteller's reader engine |
 | `FLOWSTATE_PORT` | `8003` | FlowState Reader |
 

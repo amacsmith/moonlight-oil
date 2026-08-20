@@ -20,14 +20,31 @@ Then open <http://localhost:8080>.
 
 | Service | Port | Notes |
 |---------|------|-------|
-| `home` | 8080 | Static big-button landing page (Caddy serving `stack/home`). |
+| `home` | 8080 | Big-button landing page. Caddy serves `stack/home`, configured by `stack/caddy/Caddyfile`. |
 | `storyteller` | 8001 / 8002 | Official image `registry.gitlab.com/storyteller-platform/storyteller:latest`. Data in `stack/data/storyteller`. |
 | `flowstate` | 8003 | Built from [PeggyZWY/flowstate-webapp](https://github.com/PeggyZWY/flowstate-webapp) via `stack/flowstate/Dockerfile`. Frontend-only, no data. |
 
-Ports are configurable in `.env`. Note: the home page reads the service host
-dynamically but the **ports are hard-coded** in the `PORTS` object at the bottom
-of `stack/home/index.html` — if you change `STORYTELLER_PORT` / `FLOWSTATE_PORT`,
-update that object to match (the static page can't read `.env`).
+Ports are configurable in `.env` and nothing needs keeping in sync: Caddy reads
+them from the environment and publishes them at `/config.json`, which the home
+page fetches on load.
+
+Caddy also exposes `/up/storyteller` and `/up/flowstate` — same-origin reverse
+proxies used purely as liveness probes, so the page can show *Starting up…* or
+*Ready* on each button instead of guessing. It answers `502` while a container
+isn't listening.
+
+```bash
+curl -s http://localhost:8080/config.json
+curl -sI -o /dev/null -w '%{http_code}\n' http://localhost:8080/up/flowstate
+```
+
+Set `LAN_HOST` to this machine's address on your network and the home page will
+show a QR code that opens the library on a phone or tablet. `launch.ps1` fills it
+in automatically on Windows; running by hand, pass it yourself:
+
+```bash
+LAN_HOST=192.168.1.42 docker compose up -d
+```
 
 ## Why FlowState is built from source
 

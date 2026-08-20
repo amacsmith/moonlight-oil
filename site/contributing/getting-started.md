@@ -34,7 +34,8 @@ moonlight-oil/
 ├── stack/
 │   ├── docker-compose.yml      # Home + Storyteller + FlowState
 │   ├── .env.example            # Documented settings
-│   ├── home/index.html         # Big-button landing page
+│   ├── caddy/Caddyfile         # Static files + /config.json + /up/<service>
+│   ├── home/                   # index.html, boot.js, app.js, qr.js
 │   └── flowstate/Dockerfile    # Builds FlowState from source
 ├── site/                       # VitePress documentation site
 ├── tests/                      # Test suite

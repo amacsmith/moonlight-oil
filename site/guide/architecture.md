@@ -42,13 +42,31 @@ Moonlight Oil has two layers: an **installer** that runs once, and a **container
 
 ### Home Page (`home`)
 
-A static HTML page served by [Caddy](https://caddyserver.com/). Two large cards link to the other services. Features:
+The only screen the person this is built for ever sees. [Caddy](https://caddyserver.com/) serves it from `stack/home/`, configured by [`stack/caddy/Caddyfile`](/self-hosting/running-the-stack#what-caddy-serves).
 
-- Time-of-day greeting
-- Light/dark theme toggle (persisted in localStorage)
-- Dynamic hostname detection (works over LAN, not just localhost)
-- Help dialog for first-time users
-- High-contrast, large text for accessibility
+Caddy does two jobs the page can't do for itself:
+
+| Endpoint | Why it exists |
+|----------|---------------|
+| `/config.json` | Publishes the real ports and the LAN address, so the page never hardcodes them |
+| `/up/<service>` | A same-origin reverse proxy per service, so the page can ask "are you awake?" without tripping over CORS |
+
+Everything else is a static file server.
+
+The page itself:
+
+- **Live status per service.** Each card reads *Starting up…* or *Ready*, polling every two seconds while it waits and every twenty once things settle. A card that isn't ready refuses to navigate and explains why, rather than dropping someone on a browser error page.
+- **Ports from the server**, fetched on load, with sensible fallbacks if the request fails.
+- **A QR code to a phone or tablet**, when the PC has a reachable address on the home network. See [reading on another device](/self-hosting/running-the-stack#reading-on-a-phone-or-tablet).
+- **Three text sizes**, scaling the whole page from one custom property, remembered between visits.
+- **Light and dark**, following the OS by default, applied before the first paint so there's no flash.
+- Time-of-day greeting, a help sheet that shows live status, drawn SVG icons rather than emoji, a skip link, visible focus rings, and reduced-motion support.
+
+::: tip Why the status matters more than it sounds
+A cold container engine takes up to a minute to come up. Before the probes existed, clicking a big friendly button thirty seconds after boot landed on *"This site can't be reached"* — a dead end for someone who won't think to retry. It was the most likely failure and the worst one.
+:::
+
+The QR code is produced by `stack/home/qr.js`, a from-scratch byte-mode encoder written for this project. Fetching one from a CDN would contradict the premise that nothing leaves the house, and vendoring a minified blob would leave nobody able to read it.
 
 ### Storyteller (`storyteller`)
 
@@ -70,9 +88,9 @@ Built from source via a [multi-stage Dockerfile](/self-hosting/running-the-stack
 
 | Script | Purpose |
 |--------|---------|
-| `common.ps1` | Shared helpers: logging, runtime detection, compose wrapper |
+| `common.ps1` | Shared helpers: logging, runtime detection, compose wrapper, LAN address detection, `.env` editing |
 | `install.ps1` | First-time WSL2 + Docker/Podman setup, secret generation |
-| `launch.ps1` | Desktop shortcut target: engine start, compose up, browser open |
+| `launch.ps1` | Desktop shortcut target: record the LAN address, engine start, compose up, browser open |
 | `stop.ps1` | Graceful container stop (books are kept) |
 | `uninstall.ps1` | Container removal (books and settings are kept) |
 
@@ -90,8 +108,9 @@ The scripts auto-detect which container runtime is installed and use the appropr
 C:\Users\Public\MoonlightOil\     ← live runtime copy
 ├── stack/
 │   ├── docker-compose.yml
-│   ├── .env                       ← generated, contains secret key
-│   ├── home/index.html
+│   ├── .env                       ← generated; secret key + LAN_HOST
+│   ├── caddy/Caddyfile            ← static files, /config.json, /up/<service>
+│   ├── home/                      ← index.html, boot.js, app.js, qr.js
 │   ├── flowstate/Dockerfile
 │   └── data/storyteller/          ← books, covers, database
 └── moonlight-oil.log              ← setup + launch log

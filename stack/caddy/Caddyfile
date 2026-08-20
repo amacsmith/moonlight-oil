@@ -1,0 +1,88 @@
+# Moonlight Oil — the front door.
+#
+# The home page used to be plain static files. That meant it could only ever
+# *guess* whether Storyteller and FlowState were awake, so Dad could click a
+# big friendly button thirty seconds after boot and land on "This site can't
+# be reached". This config fixes that by giving the page two things it cannot
+# work out on its own:
+#
+#   /config.json    the ports the stack is ACTUALLY running on, plus the LAN
+#                   address, so the page never hardcodes them
+#   /up/<service>   a same-origin probe for each service, so the page can ask
+#                   "are you awake yet?" without tripping over CORS
+#
+# Everything else is the static file server it always was.
+{
+	# No admin socket and no TLS machinery: this only ever serves one PC's LAN.
+	admin off
+	auto_https off
+	persist_config off
+}
+
+:80 {
+	root * /usr/share/caddy
+	encode gzip
+
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		# Everything the page needs it ships with. Nothing is fetched off-box.
+		Content-Security-Policy "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+		-Server
+	}
+
+	# ---------------------------------------------------------------------
+	# Runtime configuration.
+	#
+	# The ports live in .env, which a static page can't read. Caddy bakes them
+	# in here at startup so index.html never has to guess. LAN_HOST is filled
+	# in by the launcher — it's what makes the "read on your tablet" QR code
+	# point somewhere a tablet can actually reach (a QR of "localhost" is
+	# useless on any device except this one).
+	# ---------------------------------------------------------------------
+	handle /config.json {
+		header Content-Type "application/json; charset=utf-8"
+		header Cache-Control "no-store"
+		respond `{"homePort":{$HOME_PORT:8080},"storytellerPort":{$STORYTELLER_PORT:8001},"flowstatePort":{$FLOWSTATE_PORT:8003},"lanHost":"{$LAN_HOST:}"}` 200
+	}
+
+	# ---------------------------------------------------------------------
+	# Liveness probes.
+	#
+	# Same origin, so the browser will actually let us read the result. We
+	# rewrite to "/" and the page sends HEAD, so a probe costs a status line
+	# and nothing else. Caddy answers 502 when the container isn't listening,
+	# which is exactly the signal the page wants: any real response means
+	# awake, 502/503/504 means still starting (or stopped).
+	# ---------------------------------------------------------------------
+	handle /up/storyteller {
+		rewrite * /
+		reverse_proxy {$STORYTELLER_UPSTREAM:storyteller:8001} {
+			transport http {
+				dial_timeout 2s
+				response_header_timeout 4s
+			}
+		}
+	}
+
+	handle /up/flowstate {
+		rewrite * /
+		reverse_proxy {$FLOWSTATE_UPSTREAM:flowstate:80} {
+			transport http {
+				dial_timeout 2s
+				response_header_timeout 4s
+			}
+		}
+	}
+
+	# The home page itself. index.html is the only HTML here; it must never be
+	# cached or Dad would keep seeing yesterday's version after an update.
+	handle {
+		# The page and its scripts must never be served stale, or Dad keeps
+		# seeing the previous version after an update. Note "/" as well as
+		# "/index.html": the bare path is how he'll actually arrive.
+		@page path / /index.html /app.js /qr.js
+		header @page Cache-Control "no-cache"
+		file_server
+	}
+}

@@ -50,7 +50,8 @@ Every PR runs:
 
 - **installer** (Windows) — compiles `MoonlightOilSetup.exe`
 - **flowstate-image** (Ubuntu) — builds the FlowState Docker image
-- **validate** (Ubuntu) — runs the test suite (compose, HTML, Dockerfile, installer, env validation)
+- **validate** (Ubuntu) — 186 tests over the compose config, Caddy config, home page, QR encoder, Dockerfile, installer scripts and env file
+- **browser** (Ubuntu) — validates the Caddyfile with Caddy itself, then drives the real home page in headless Chromium
 - **docs** (Ubuntu) — builds the VitePress documentation site
 
 ## Tests
@@ -59,7 +60,18 @@ Every PR runs:
 npm test
 ```
 
-Tests use Node.js built-in test runner (`node:test`). No external dependencies needed. They validate project structure and configuration without requiring Docker.
+Node's built-in `node:test` runner. No dependencies, no Docker, no Windows — it reads the source and checks it says the right things.
+
+To also check the page *behaves*:
+
+```bash
+npm run caddy:check     # ask Caddy whether the Caddyfile is valid
+npm run home:up         # start just the home service
+npm run test:browser    # 22 checks in headless Chromium
+npm run home:down
+```
+
+The browser suite runs with Storyteller and FlowState deliberately down, because "not listening yet" is the state the home page exists to handle well. Full detail in [the testing guide](site/contributing/testing.md).
 
 ## Releases
 
@@ -70,6 +82,6 @@ Tag `main` with `v1.0.0`, `v1.1.0`, etc. The CI workflow automatically attaches 
 For the `main` branch:
 
 - Require PR reviews (1 approval)
-- Require status checks: `installer`, `flowstate-image`, `validate`, `docs`
+- Require status checks: `installer`, `flowstate-image`, `validate`, `browser`, `docs`
 - Require branches up to date before merging
 - No force pushes or deletions

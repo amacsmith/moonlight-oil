@@ -58,3 +58,37 @@ describe("docker-compose.yml", () => {
     assert.match(yml, /context:\s*\.\/flowstate/);
   });
 });
+
+describe("docker-compose.yml — the home service's wiring", () => {
+  // Everything the home page can't work out for itself has to be handed to
+  // Caddy through the environment; these are the seams where that happens.
+  const home = yml.slice(yml.indexOf("  home:"), yml.indexOf("  storyteller:"));
+
+  it("mounts the Caddyfile", () => {
+    assert.match(home, /\.\/caddy\/Caddyfile:\/etc\/caddy\/Caddyfile:ro/);
+  });
+
+  it("keeps the Caddyfile out of the served directory", () => {
+    // If it lived in ./home it would be downloadable at /Caddyfile.
+    assert.doesNotMatch(yml, /\.\/home\/Caddyfile/);
+  });
+
+  it("passes the real ports through so /config.json can report them", () => {
+    for (const key of ["HOME_PORT", "STORYTELLER_PORT", "FLOWSTATE_PORT"]) {
+      assert.match(home, new RegExp(`${key}:\\s*"\\$\\{${key}`), `${key} should reach the container`);
+    }
+  });
+
+  it("passes the LAN address through for the tablet hand-off", () => {
+    assert.match(home, /LAN_HOST:\s*"\$\{LAN_HOST:-\}"/);
+  });
+
+  it("has a healthcheck the launcher can trust", () => {
+    assert.match(home, /healthcheck:/);
+    assert.match(home, /config\.json/);
+  });
+
+  it("mounts the web root read-only", () => {
+    assert.match(home, /\.\/home:\/usr\/share\/caddy:ro/);
+  });
+});
